@@ -1,0 +1,53 @@
+#!/usr/bin/env node
+
+var util = require('util'),
+    glob = require('glob'),
+    _ = require('underscore'),
+    path = require('path'),
+    exec = require('child_process').exec;
+
+var errorMessage = function(message) {
+  process.stdout.write(util.format("console.error('Browserify %s');", message));
+};
+
+try {
+  var browserify = require('browserify'),
+  fs = require('fs');
+
+  var debug = (process.argv[2] === "--debug");
+  var paths = process.argv[3].split(",")
+  var basedir = process.argv[4];
+
+  var b = browserify(process.stdin, {basedir: basedir});
+
+  var globPaths = _.map(paths, function(p) {
+    return path.join(p, "**/*.js");
+  });
+
+  glob("{" + globPaths.join(",") + "}", function(er, files) {
+    _.each(files, function(file) {
+      var exposedName = file;
+
+      _.each(paths, function(pathName) {
+        exposedName = exposedName.replace(path.resolve(__dirname + pathName) + "/", "");
+      });
+
+      exposedName = path.basename(exposedName, ".js");
+
+      b.require(file, {expose: exposedName});
+    });
+
+    b.bundle({debug: debug}, function(err, src) {
+      if (err) {
+        // Send the browserify error message to the browser console
+        errorMessage(err);
+      }
+      else {
+        process.stdout.write(src);
+      }
+    });
+  });
+}
+catch(err) {
+  errorMessage(err);
+}
