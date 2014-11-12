@@ -3,15 +3,15 @@ require "browserify_sprockets/version"
 require "open3"
 
 module BrowserifySprockets
-  def self.bootstrap(node_path, load_paths = [])
+  def self.bootstrap(node_path, transforms = [])
     Engine.node_path = node_path
-    Engine.load_paths = load_paths
+    Engine.transforms = transforms
     Sprockets.register_engine(".browserify", Engine)
   end
 
   class Engine
     class << self
-      attr_accessor :load_paths
+      attr_accessor :transforms
       attr_accessor :node_path
     end
 
@@ -30,11 +30,11 @@ module BrowserifySprockets
 
       debug = (ENV['RACK_ENV'] == "production") ? "" : "--debug"
 
-      paths = self.class.load_paths.join(",")
+      transforms = self.class.transforms.join(',')
 
       output = ""
 
-      Open3.popen3({"NODE_PATH" => self.class.node_path}, build_script, debug, paths, base_directory) do |stdin, stdout, stderr|
+      Open3.popen3({"NODE_PATH" => self.class.node_path}, build_script, debug, base_directory, transforms) do |stdin, stdout, stderr|
         stdin.puts data
         stdin.close
 
