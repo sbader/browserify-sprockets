@@ -22,7 +22,7 @@ To use the module, first import it:
 require "browserify-sprockets"
 ```
 
-Then bootstrap the Sprockets engine by calling `BrowserifySprockets.boostrap` with the locations of your `node_modules` directory and an array of directories where Browserify transforms may be located:
+Then bootstrap the Sprockets engine by calling `BrowserifySprockets.boostrap` with the locations of your `node_modules` directory and an array of directories where Browserify transforms may be located. For example:
 
 ```ruby
 node_path = File.expand_path("../../../node_modules/", __FILE__)
